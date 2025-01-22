@@ -33,11 +33,23 @@ async function run() {
 
 
     const apartmentCollection = client.db("mTowerDB").collection("apartments");
+    const requestCollection = client.db("mTowerDB").collection("requests");
 
     app.get("/apartments", async(req, res) => {
       const result = await apartmentCollection.find().toArray();
       res.send(result);
     });
+
+    app.post("/requests", async (req, res) => {
+      const requestedFlat = req.body;
+      const result = await requestCollection.insertOne(requestedFlat);
+      res.send(result);
+    });
+
+
+
+
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
