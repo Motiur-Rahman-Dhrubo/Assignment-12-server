@@ -40,6 +40,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/requests", async (req, res) => {
+      const email = req.query.email;
+      const query = { reqUserEmail: email };
+      const result = await requestCollection.find(query).toArray();
+      res.send(result);
+    });
+
     app.post("/requests", async (req, res) => {
       const requestedFlat = req.body;
       const result = await requestCollection.insertOne(requestedFlat);
