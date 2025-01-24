@@ -34,6 +34,7 @@ async function run() {
 
     const apartmentCollection = client.db("mTowerDB").collection("apartments");
     const requestCollection = client.db("mTowerDB").collection("requests");
+    const userCollection = client.db("mTowerDB").collection("users");
 
     app.get("/apartments", async(req, res) => {
       const result = await apartmentCollection.find().toArray();
@@ -50,6 +51,17 @@ async function run() {
     app.post("/requests", async (req, res) => {
       const requestedFlat = req.body;
       const result = await requestCollection.insertOne(requestedFlat);
+      res.send(result);
+    });
+
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const query = { userEmail: user.userEmail };
+      const existingUser = await userCollection.findOne(query);
+      if(existingUser){
+        return res.send({message: 'user already exists'})
+      }
+      const result = await userCollection.insertOne(user);
       res.send(result);
     });
 
