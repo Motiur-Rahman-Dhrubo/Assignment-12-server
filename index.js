@@ -60,6 +60,12 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/members", async (req, res) => {
+      const query = { userRole: "member" };
+      const result = await userCollection.find(query).toArray();
+      res.send(result);
+    });
+
     app.post("/requests", async (req, res) => {
       const requestedFlat = req.body;
       const result = await requestCollection.insertOne(requestedFlat);
