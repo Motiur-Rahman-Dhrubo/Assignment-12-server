@@ -35,6 +35,7 @@ async function run() {
     const apartmentCollection = client.db("mTowerDB").collection("apartments");
     const requestCollection = client.db("mTowerDB").collection("requests");
     const userCollection = client.db("mTowerDB").collection("users");
+    const announcementCollection = client.db("mTowerDB").collection("announcements");
 
     app.get("/apartments", async(req, res) => {
       const result = await apartmentCollection.find().toArray();
@@ -69,6 +70,12 @@ async function run() {
     app.post("/requests", async (req, res) => {
       const requestedFlat = req.body;
       const result = await requestCollection.insertOne(requestedFlat);
+      res.send(result);
+    });
+
+    app.post("/announcements", async (req, res) => {
+      const announcement = req.body;
+      const result = await announcementCollection.insertOne(announcement);
       res.send(result);
     });
 
