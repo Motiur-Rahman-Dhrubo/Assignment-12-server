@@ -50,22 +50,33 @@ async function run() {
     const verifyToken = (req, res, next) => {
       console.log("inside verify token", req.headers.authorization);
       if(!req.headers.authorization){
-        return res.status(401).send({ message: 'forbidden access' });
+        return res.status(401).send({ message: 'unauthorized access' });
       }
       const token = req.headers.authorization.split(' ')[1];
       jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
         if(err){
-          return res.status(401).send({ message: "forbidden access" });
+          return res.status(401).send({ message: "unauthorized access" });
         }
         req.decoded = decoded;
         next();
       });
     }
 
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { userEmail: email };
+      const user = await userCollection.findOne(query);
+      const isAdmin = user?.userRole === "admin";
+      if (!isAdmin) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      next();
+    }
+
     app.get('/user/admin/:email', verifyToken, async (req, res) => {
       const email = req.params.email;
       if (email !== req.decoded.email) {
-        return res.status(403).send({ message: 'unauthorized access' })
+        return res.status(403).send({ message: 'forbidden access' })
       }
 
       const query = { userEmail: email };
@@ -77,43 +88,53 @@ async function run() {
       res.send({ admin })
     })
 
+
+    app.get("/user/member/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+
+      const query = { userEmail: email };
+      const user = await userCollection.findOne(query);
+      let member = false;
+      if (user) {
+        member = user?.userRole === "member";
+      }
+      res.send({ member });
+    });
+    
+
     app.get("/apartments", async(req, res) => {
       const result = await apartmentCollection.find().toArray();
       res.send(result);
     });
 
-    app.get("/requests", async (req, res) => {
+    app.get("/requests", verifyToken, async (req, res) => {
       const email = req.query.email;
       const query = { reqUserEmail: email };
       const result = await requestCollection.find(query).toArray();
       res.send(result);
     });
 
-    app.get("/pending-requests", async (req, res) => {
+    app.get("/pending-requests", verifyToken, verifyAdmin, async (req, res) => {
       const query = { reqStatus: "pending" };
       const result = await requestCollection.find(query).toArray();
       res.send(result);
     });
 
-    app.get("/users", async (req, res) => {
-      const email = req.query.email;
-      const query = { userEmail: email };
-      const result = await userCollection.find(query).toArray();
-      res.send(result);
-    });
-
-    app.get("/all-users", verifyToken, async (req, res) => {
+    app.get("/all-users", verifyToken, verifyAdmin, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
 
-    app.get("/members", async (req, res) => {
+    app.get("/members", verifyToken, verifyAdmin, async (req, res) => {
       const query = { userRole: "member" };
       const result = await userCollection.find(query).toArray();
       res.send(result);
     });
 
-    app.get("/announcements", async (req, res) => {
+    app.get("/announcements", verifyToken, async (req, res) => {
       const result = await announcementCollection.find().toArray();
       res.send(result);
     });
@@ -124,7 +145,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/all-coupon", async (req, res) => {
+    app.get("/all-coupon", verifyToken, verifyAdmin, async (req, res) => {
       const result = await couponCollection.find().toArray();
       res.send(result);
     });
@@ -133,19 +154,19 @@ async function run() {
 
 
 
-    app.post("/requests", async (req, res) => {
+    app.post("/requests", verifyToken, async (req, res) => {
       const requestedFlat = req.body;
       const result = await requestCollection.insertOne(requestedFlat);
       res.send(result);
     });
 
-    app.post("/add-coupon", async (req, res) => {
+    app.post("/add-coupon", verifyToken, verifyAdmin, async (req, res) => {
       const addedCoupon = req.body;
       const result = await couponCollection.insertOne(addedCoupon);
       res.send(result);
     });
 
-    app.post("/announcements", async (req, res) => {
+    app.post("/announcements", verifyToken, verifyAdmin, async (req, res) => {
       const announcement = req.body;
       const result = await announcementCollection.insertOne(announcement);
       res.send(result);
@@ -168,18 +189,18 @@ async function run() {
 
 
 
-    app.put("/coupon/:id", async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const updateCoupon = req.body;
-      const action = {
-        $set: {
-          availability: updateCoupon.action,
-        },
-      };
-      const result = await couponCollection.updateOne(filter, action);
-      res.send(result);
-    });
+    // app.put("/coupon/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const filter = { _id: new ObjectId(id) };
+    //   const updateCoupon = req.body;
+    //   const action = {
+    //     $set: {
+    //       availability: updateCoupon.action,
+    //     },
+    //   };
+    //   const result = await couponCollection.updateOne(filter, action);
+    //   res.send(result);
+    // });
 
 
 
