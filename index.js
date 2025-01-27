@@ -49,6 +49,12 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/pending-requests", async (req, res) => {
+      const query = { reqStatus: "pending" };
+      const result = await requestCollection.find(query).toArray();
+      res.send(result);
+    });
+
     app.get("/users", async (req, res) => {
       const email = req.query.email;
       const query = { userEmail: email };
