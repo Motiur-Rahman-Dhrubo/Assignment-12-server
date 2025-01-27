@@ -79,6 +79,17 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/available-coupon", async (req, res) => {
+      const query = { availability: "available" };
+      const result = await couponCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.get("/all-coupon", async (req, res) => {
+      const result = await couponCollection.find().toArray();
+      res.send(result);
+    });
+
     app.post("/requests", async (req, res) => {
       const requestedFlat = req.body;
       const result = await requestCollection.insertOne(requestedFlat);
