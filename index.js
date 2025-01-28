@@ -3,6 +3,7 @@ const app = express();
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 require("dotenv").config();
+const { ObjectId } = require("mongodb");
 const port = process.env.PORT || 5000;
 
 // middleware
@@ -189,19 +190,18 @@ async function run() {
 
 
 
-    // app.put("/coupon/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const filter = { _id: new ObjectId(id) };
-    //   const updateCoupon = req.body;
-    //   const action = {
-    //     $set: {
-    //       availability: updateCoupon.action,
-    //     },
-    //   };
-    //   const result = await couponCollection.updateOne(filter, action);
-    //   res.send(result);
-    // });
-
+    app.patch("/coupon/:id", verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateCoupon = req.body;
+      const actionUpdate = {
+        $set: {
+          availability: updateCoupon.action,
+        },
+      };
+      const result = await couponCollection.updateOne(filter, actionUpdate);
+      res.send(result);
+    });
 
 
 
