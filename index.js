@@ -28,7 +28,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
 
 
@@ -129,6 +129,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/my-info", verifyToken, async (req, res) => {
+      const email = req.query.email;
+      const query = { userEmail: email };
+      const result = await userCollection.find(query).toArray();
+      res.send(result);
+    });
+
     app.get("/members", verifyToken, verifyAdmin, async (req, res) => {
       const query = { userRole: "member" };
       const result = await userCollection.find(query).toArray();
@@ -203,14 +210,67 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/user/:id", verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateUser = req.body;
+      const actionUpdate = {
+        $set: {
+          userRole: updateUser.action,
+        },
+      };
+      const result = await userCollection.updateOne(filter, actionUpdate);
+      res.send(result);
+    });
+
+    app.patch("/request/:id", verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateRequest = req.body;
+      const actionUpdate = {
+        $set: {
+          reqStatus: updateRequest.status,
+          agreementAcceptDate: updateRequest.acceptDate,
+        },
+      };
+      const result = await requestCollection.updateOne(filter, actionUpdate);
+      res.send(result);
+    });
+
+    app.patch("/request-month/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateMonth = req.body;
+      const actionUpdate = {
+        $set: {
+          rentMonth: updateMonth.selectedMonth,
+        },
+      };
+      const result = await requestCollection.updateOne(filter, actionUpdate);
+      res.send(result);
+    });
+
+    app.patch("/apartment/:id", verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: id };
+      const updateFlat = req.body;
+      const actionUpdate = {
+        $set: {
+          availability: updateFlat.action,
+        },
+      };
+      const result = await apartmentCollection.updateOne(filter, actionUpdate);
+      res.send(result);
+    });
+
 
 
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    // await client.db("admin").command({ ping: 1 });
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!"
+    // );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
