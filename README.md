@@ -17,8 +17,18 @@ The purpose of M.tower is to provide a comprehensive Building Management System 
 
 ## Admin Credential :
 
-- Admin Email: zxc@zxc.zxc
-- Admin password: zxcZXC
+- Admin Email: admin1@gmail.com
+- Admin password: ,Adgjmptw
+
+## Member Credential :
+
+- Member Email: member1@gmail.com
+- Member password: ,Adgjmptw
+
+## User Credential :
+
+- User Email: user1@gmail.com
+- User password: ,Adgjmptw
 
 ## Key Features
 - Apartment Availability Status: Displays available and unavailable apartments with details like floor number and room number.
